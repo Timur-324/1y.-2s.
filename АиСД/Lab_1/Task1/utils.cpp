@@ -21,18 +21,19 @@ const char * errorMessage(
             return "Cannot open input file";
         case EncoderError::OutputFileOpenError:
             return "Cannot create or write to output file";
+        case EncoderError::NULLptr:
+            return "The pointer is NULL";
         default:
             return "Unknown error";
     }
 }
 
-static const int BUFFER_SIZE = 4096;
+// static const int BUFFER_SIZE = 4096;
 
-// Конструктор
-encoder::encoder(
-    const unsigned char * key, 
-    int keySize) :
-    key(nullptr), keySize(0)
+
+void encoder::ValidateKey(
+    const unsigned char* key, 
+    int keySize) const
 {
     if (!key) 
     {
@@ -41,15 +42,84 @@ encoder::encoder(
     if (keySize <= 0)
     {
         throw EncoderError::InvalidKeySize;
-    } 
-    if (!(this->key = new (std::nothrow) unsigned char[keySize])) 
+    }
+}
+
+void encoder::allocateKey(
+    int keySize)
+{
+    if (!(key = new (std::nothrow) unsigned char[keySize])) 
     {
         throw EncoderError::MemoryAllocationFailed;
     }
+}
+
+void encoder::CopyKeyBytes(
+    const unsigned char * key, 
+    int keySize)
+{
     for (int i = 0; i < keySize; ++i) 
     {
         this->key[i] = key[i];
     }
+}
+
+void encoder::allocateBuffer(
+    unsigned char * & buffer, 
+    size_t size)
+{
+    if(size <= 0)
+    {
+        throw EncoderError::InvalidKeySize;
+    }
+
+    if(!(buffer = new (std::nothrow) unsigned char[size]))
+    {
+        throw EncoderError::MemoryAllocationFailed;
+    }
+}
+
+void encoder::CopyKeyBytes2(
+    unsigned char * & buffer, 
+    const unsigned char * key, 
+    int size)
+{
+    if(!buffer || !key)
+    {
+        throw EncoderError::NULLptr;
+    }
+
+    if(size <= 0)
+    {
+        throw EncoderError::InvalidKeySize;
+    }
+
+    for (int i = 0; i < size; ++i) 
+    {
+        buffer[i] = key[i];
+    }
+}
+
+
+    
+//  bool encoder::validateIO(const char * inFile, const char * outFile) const
+//  {
+
+//  }
+
+// Конструктор
+encoder::encoder(
+    const unsigned char * key, 
+    int keySize,
+    size_t bufsize) :
+    key(nullptr), keySize(0), buffer_size(bufsize)
+{
+    ValidateKey(key, keySize);
+
+    allocateKey(keySize);
+
+    CopyKeyBytes(key, keySize);
+
     this->keySize = keySize;
 }
 
@@ -64,26 +134,13 @@ encoder::~encoder()
 // Конструктор копирования
 encoder::encoder(
     const encoder & other) : 
-    key(nullptr), keySize(0)
+    key(nullptr), keySize(0), buffer_size(other.buffer_size)
 {
-    if(!other.key)
-    {
-        throw EncoderError::NullKey;
-    }
-    if (other.keySize <= 0)
-    {
-        throw EncoderError::InvalidKeySize;
-    } 
-    if (!(this->key = new (std::nothrow) unsigned char[other.keySize])) 
-    {
-        throw EncoderError::MemoryAllocationFailed;    
-    }
+    ValidateKey(other.key, other.keySize);
 
-    // Копируем байты ключа
-    for (int i = 0; i < other.keySize; ++i) 
-    {
-        this->key[i] = other.key[i];
-    }
+    allocateKey(other.keySize);
+    
+    CopyKeyBytes(other.key, other.keySize);
 
     // Устанавливаем размер
     this->keySize = other.keySize;
@@ -110,21 +167,18 @@ encoder & encoder::operator=(
     if (other.key && other.keySize > 0) 
     {
         newSize = other.keySize;
-        newKey = new (std::nothrow) unsigned char[newSize];
-        if (!newKey) 
-        {
-            // Не удалось выделить память -> сохраняем старое состояние
-            throw EncoderError::MemoryAllocationFailed;
-        }
-        for (int i = 0; i < newSize; ++i) 
-        {
-            newKey[i] = other.key[i];
-        }
+        allocateBuffer(newKey, newSize);
+        CopyKeyBytes2(newKey, other.key, newSize);
+        // for (int i = 0; i < newSize; ++i) 
+        // {
+        //     newKey[i] = other.key[i];
+        // }
     }
 
     // 5. Обновляем состояние 
     key = newKey;
     keySize = newSize;
+    buffer_size = other.buffer_size;
 
     // 6. Удаляем старое состояние
     delete[] oldKey;
@@ -140,21 +194,16 @@ bool encoder::setKey(
     const unsigned char * newKey, 
     int newSize)
 {
-    if (!newKey || newSize <= 0) 
-    {    
-        return false;
-    }
+    ValidateKey(newKey, newSize);
 
-    unsigned char * temp = new (std::nothrow) unsigned char[newSize];
-    if (!temp) 
-    {
-        return false;
-    }
+    unsigned char * temp = nullptr;
+    allocateBuffer(temp, newSize);
 
-    for (int i = 0; i < newSize; ++i) 
-    {
-        temp[i] = newKey[i];
-    }
+    CopyKeyBytes2(temp, newKey, newSize);
+    // for (int i = 0; i < newSize; ++i) 
+    // {
+    //     temp[i] = newKey[i];
+    // }
 
     delete[] key;
 
@@ -232,7 +281,7 @@ bool encoder::encode(
     int i = 0, j = 0;
 
     // Буфер для чтения/записи
-    unsigned char buffer[BUFFER_SIZE];
+    unsigned char buffer[buffer_size];
     size_t bytesRead;
 
     while ((bytesRead = fread(buffer, 1, sizeof(buffer), in)) > 0) 

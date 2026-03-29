@@ -20,7 +20,8 @@ enum class EncoderError
     InvalidKeySize,
     MemoryAllocationFailed,
     InputFileOpenError,
-    OutputFileOpenError
+    OutputFileOpenError,
+    NULLptr
 };
 
 const char * errorMessage(EncoderError e);
@@ -30,9 +31,20 @@ class encoder
 private: 
     unsigned char * key;
     int keySize;
+    size_t buffer_size;
+
+    // вспомогательные функции для проверки
+    void ValidateKey(const unsigned char* key, int keySize) const; // Проверка ключа и его размера
+
+    // bool validateIO(const char * inFile, const char * outFile) const; // Проверка имён файлов
+
+    void allocateKey(int keySize);
+
+    void CopyKeyBytes(const unsigned char * key, int keySize);
+
 public:
     // Конструктор
-    encoder(const unsigned char * key, int keySize);
+    encoder(const unsigned char * key, int keySize, size_t bufsize = 4096);
 
     // Деструктор
     ~encoder();
@@ -47,6 +59,10 @@ public:
     bool setKey(const unsigned char * newKey, int newSize);
 
     bool encode(const char * inputFile, const char * outputFile, bool decrypt);
+
+    void allocateBuffer(unsigned char *& buffer, size_t size);
+
+    void CopyKeyBytes2(unsigned char * & buffer, const unsigned char * key, int size);
 };
 
 #endif
