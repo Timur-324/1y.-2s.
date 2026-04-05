@@ -36,6 +36,7 @@ int main(int argc, char * argv[])
     while(fread(&byte, sizeof(unsigned char), 1, file) == 1)
     {
         printf("Read byte: %d\n", byte);
+        
         printf("Position: %ld\n", ftell(file));
         printf("feof: %s\n", feof(file) ? "Yes" : "No");
         printf("ferror: %s\n", ferror(file) ? "Yes" : "No");

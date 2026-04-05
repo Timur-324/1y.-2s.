@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
 {
     if(argc < 3)
     {
-        printf("Error! Not enougth arguments!\n");
+        printf("Error! Not enough arguments!\n");
         printf("Usage: %s <file_path> <flag> [mask_value]\n", argv[0]);
         return -1;
     }
