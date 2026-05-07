@@ -15,26 +15,36 @@ int main(int argc, char * argv[])
     const char * src = argv[1];
     const char * dst = argv[2];
 
-    // проверка на инноды 
-    struct stat st_src, st_dst;
 
-    // Получаем информацию об исходном файле
-    if (stat(src, &st_src) != 0)
-    {
-        printf("Error: cannot access source file '%s'\n", src);
-        return -2;
-    }
+    /*
+    TODO !!!
+    Нужно сюда впихнуть новый алгоритм проверки!!!
 
-    // Проверяем, существует ли destination
-    if (stat(dst, &st_dst) == 0)
-    {
-        // Если destination существует — проверяем, не тот ли это же файл
-        if (st_src.st_dev == st_dst.st_dev && st_src.st_ino == st_dst.st_ino)
-        {
-            printf("Error: source and destination are the same file (including hard links)!\n");
-            return -3;
-        }
-    }
+    Сперва получить пути к файлам. 
+    После приводить их к абсолютным и уже только тогда проверять на самоприсваивание
+    */
+
+
+    // // проверка на инноды 
+    // struct stat st_src, st_dst;
+
+    // // Получаем информацию об исходном файле
+    // if (stat(src, &st_src) != 0)
+    // {
+    //     printf("Error: cannot access source file '%s'\n", src);
+    //     return -2;
+    // }
+
+    // // Проверяем, существует ли destination
+    // if (stat(dst, &st_dst) == 0)
+    // {
+    //     // Если destination существует — проверяем, не тот ли это же файл
+    //     if (st_src.st_dev == st_dst.st_dev && st_src.st_ino == st_dst.st_ino)
+    //     {
+    //         printf("Error: source and destination are the same file (including hard links)!\n");
+    //         return -3;
+    //     }
+    // }
 
     FILE * in;
     FILE * out;
