@@ -80,7 +80,7 @@ void encoder::allocateBuffer(
 }
 
 void encoder::CopyKeyBytes2(
-    unsigned char * & buffer, 
+    unsigned char * buffer, 
     const unsigned char * key, 
     int size)
 {

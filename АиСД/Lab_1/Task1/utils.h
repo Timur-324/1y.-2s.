@@ -3,15 +3,16 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <new> // нужно для того, чтобы new не выкидывал ошибку, если памяти нет
 
-// class TEST
-// {
-//     int i = 100;
+// нужно для того, чтобы new не выкидывал ошибку, если памяти нет
+#include <new>
 
-// public: 
-//     int get_i();
-// };
+// ^
+// |
+// |
+// |
+// На будущее сказали не писать коменты на той же строке, что и инклуды
+
 
 // Перечисление ошибок (без использования STL)
 enum class EncoderError 
@@ -23,6 +24,11 @@ enum class EncoderError
     OutputFileOpenError,
     NULLptr
 };
+// ^
+// |
+// |
+// |
+// Также вместо такого лучше использовать stdexcept и выкидывать классы ошибок, т.к это намного лучше и более информативней
 
 const char * errorMessage(EncoderError e);
 
@@ -62,7 +68,7 @@ public:
 
     void allocateBuffer(unsigned char *& buffer, size_t size);
 
-    void CopyKeyBytes2(unsigned char * & buffer, const unsigned char * key, int size);
+    void CopyKeyBytes2(unsigned char * buffer, const unsigned char * key, int size);
 };
 
 #endif
