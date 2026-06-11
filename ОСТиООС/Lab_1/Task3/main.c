@@ -15,7 +15,6 @@ int main(int argc, char * argv[])
     const char * src = argv[1];
     const char * dst = argv[2];
 
-
     /*
     TODO !!!
     Нужно сюда впихнуть новый алгоритм проверки!!!
